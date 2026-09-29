@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stopping Axis Expansion - Geallieerd Opperbevel</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Oswald:wght@400;600&display=swap');
+
+        body {
+            font-family: 'Courier Prime', monospace;
+            background-color: #2c3e50;
+            color: #ecf0f1;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        h1, h2, h3 {
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .meter-container {
+            width: 100%;
+            background-color: #34495e;
+            border: 2px solid #7f8c8d;
+            border-radius: 4px;
+            overflow: hidden;
+            height: 24px;
+            position: relative;
+        }
+
+        .meter-fill {
+            height: 100%;
+            transition: width 0.5s ease-in-out, background-color 0.5s ease;
+        }
+
+        .meter-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+            color: white;
+            text-shadow: 1px 1px 2px black;
+        }
+
+        .btn-choice {
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-choice:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .btn-choice:active {
+            transform: translateY(0);
+        }
+
+        .typewriter {
+            overflow: hidden;
+            border-right: .15em solid orange;
+            white-space: pre-wrap;
+            margin: 0 auto;
+            letter-spacing: .15em;
+            animation: typing 2s steps(40, end), blink-caret .75s step-end infinite;
+        }
+
+        /* Scanline effect for that retro military terminal vibe */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(
+                to bottom,
+                rgba(255,255,255,0),
+                rgba(255,255,255,0) 50%,
+                rgba(0,0,0,0.1) 50%,
+                rgba(0,0,0,0.1)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 50;
+            opacity: 0.3;
+        }
+
+        .stamp {
+            font-family: 'Oswald', sans-serif;
+            font-size: 3rem;
+            font-weight: bold;
+            color: #c0392b;
+            border: 4px solid #c0392b;
+            padding: 0.5rem 1rem;
+            transform: rotate(-15deg);
+            opacity: 0.8;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200">
+    <div class="scanlines"></div>
+
+    <!-- Top Bar: Balance Meters -->
+    <header class="bg-gray-800 border-b-4 border-gray-700 p-4 sticky top-0 z-10 shadow-lg">
+        <div class="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+            <div class="w-full md:w-1/3">
+                <div class="flex justify-between text-xs mb-1">
+                    <span>Geallieerde Cohesie</span>
+                    <span id="cohesion-val">50%</span>
+                </div>
+                <div class="meter-container">
+                    <div id="meter-cohesion" class="meter-fill bg-blue-600" style="width: 50%;"></div>
+                </div>
+                <div class="text-[0.65rem] text-gray-400 mt-1 text-center">Oost-West Relatie</div>
+            </div>
+
+            <div class="w-full md:w-1/3">
+                <div class="flex justify-between text-xs mb-1">
+                    <span>Logistiek & Industrie</span>
+                    <span id="logistics-val">50%</span>
+                </div>
+                <div class="meter-container">
+                    <div id="meter-logistics" class="meter-fill bg-green-600" style="width: 50%;"></div>
+                </div>
+                <div class="text-[0.65rem] text-gray-400 mt-1 text-center">Voorraden & Mankracht</div>
+            </div>
+
+            <div class="w-full md:w-1/3">
+                <div class="flex justify-between text-xs mb-1">
+                    <span>Thuisfront & Moral</span>
+                    <span id="morale-val">50%</span>
+                </div>
+                <div class="meter-container">
+                    <div id="meter-morale" class="meter-fill bg-yellow-500" style="width: 50%;"></div>
+                </div>
+                <div class="text-[0.65rem] text-gray-400 mt-1 text-center">Volkssteun</div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="flex-grow flex items-center justify-center p-4">
+        <div class="max-w-3xl w-full bg-gray-800 border-2 border-gray-600 p-6 md:p-8 shadow-2xl relative">
+            
+            <!-- Dossier Styling Elements -->
+            <div class="absolute top-2 left-2 w-4 h-4 rounded-full border border-gray-500 bg-gray-700"></div>
+            <div class="absolute top-2 right-2 w-4 h-4 rounded-full border border-gray-500 bg-gray-700"></div>
+            <div class="absolute bottom-2 left-2 w-4 h-4 rounded-full border border-gray-500 bg-gray-700"></div>
+            <div class="absolute bottom-2 right-2 w-4 h-4 rounded-full border border-gray-500 bg-gray-700"></div>
+            
+            <div class="border-b-2 border-gray-600 pb-2 mb-6 flex justify-between items-end">
+                <h1 class="text-3xl text-white">Top Secret Dossier</h1>
+                <span id="year-display" class="text-xl font-bold text-gray-400">1938</span>
+            </div>
+
+            <!-- Start Screen -->
+            <div id="start-screen" class="block">
+                <h2 class="text-2xl mb-4 text-center">Geallieerd Opperbevel</h2>
+                <p class="mb-4 text-gray-300 leading-relaxed">
+                    Welkom, Commandant. Europa staat aan de vooravond van oorlog. U neemt de rol aan van het Geallieerde Opperbevel (Verenigd Koninkrijk, Verenigde Staten en later de Sovjet-Unie).
+                </p>
+                <p class="mb-6 text-gray-300 leading-relaxed">
+                    Uw strategische beslissingen van 1938 tot 1945 zullen de loop van de geschiedenis bepalen. Bewaak zorgvuldig drie cruciale pijlers: Geallieerde Cohesie, Logistiek en het Thuisfront. Laat een meter tot 0% zakken (of 100% voor cohesie), en de oorlog is verloren.
+                </p>
+                <div class="flex justify-center mt-8">
+                    <button onclick="startGame()" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-3 px-8 border border-gray-500 rounded btn-choice text-lg">
+                        OPEN DOSSIER (START)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Scenario Screen -->
+            <div id="scenario-screen" class="hidden">
+                <h2 id="scenario-title" class="text-2xl mb-4 text-blue-400 font-bold">Conferentie van München</h2>
+                <div class="bg-gray-900 p-4 mb-6 border border-gray-700 text-gray-300 rounded">
+                    <p id="scenario-desc" class="leading-relaxed"></p>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6">
+                    <button id="btn-choice-a" onclick="makeChoice(0)" class="btn-choice bg-gray-700 border-2 border-gray-500 p-4 text-left rounded flex flex-col justify-between min-h-[120px]">
+                        <span id="choice-a-title" class="font-bold text-lg text-white mb-2 block">Appeasement</span>
+                        <span id="choice-a-desc" class="text-sm text-gray-400 block mb-4">Geef Sudetenland aan Hitler om vrede te kopen.</span>
+                        <span id="choice-a-effects" class="text-xs text-gray-500 font-mono mt-auto block border-t border-gray-600 pt-2">Voorbeeld effecten</span>
+                    </button>
+                    
+                    <button id="btn-choice-b" onclick="makeChoice(1)" class="btn-choice bg-gray-700 border-2 border-gray-500 p-4 text-left rounded flex flex-col justify-between min-h-[120px]">
+                        <span id="choice-b-title" class="font-bold text-lg text-white mb-2 block">Directe Oorlog</span>
+                        <span id="choice-b-desc" class="text-sm text-gray-400 block mb-4">Dreig met ingrijpen als Hitler binnenvalt.</span>
+                        <span id="choice-b-effects" class="text-xs text-gray-500 font-mono mt-auto block border-t border-gray-600 pt-2">Voorbeeld effecten</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Game Over Screen -->
+            <div id="game-over-screen" class="hidden text-center">
+                <div class="mb-8">
+                    <span class="stamp">CLASSIFIED: FAILED</span>
+                </div>
+                <h2 class="text-3xl mb-4 text-red-500">MISSIE GEFAALD</h2>
+                <p id="game-over-reason" class="text-xl mb-6 text-gray-300 leading-relaxed max-w-2xl mx-auto"></p>
+                <div class="bg-gray-900 p-4 border border-gray-700 inline-block mb-8">
+                    <p class="text-gray-400 font-mono text-sm">Eindstatus in <span id="fail-year"></span></p>
+                </div>
+                <div>
+                    <button onclick="resetGame()" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-6 border border-gray-500 rounded btn-choice">
+                        RESTART SIMULATIE
+                    </button>
+                </div>
+            </div>
+
+            <!-- Victory Screen -->
+            <div id="victory-screen" class="hidden text-center">
+                <div class="mb-8">
+                    <span class="stamp border-green-600 text-green-600">VICTORY</span>
+                </div>
+                <h2 class="text-3xl mb-4 text-green-500">OVERWINNING IN EUROPA (V-E DAY)</h2>
+                <p class="text-xl mb-6 text-gray-300 leading-relaxed max-w-2xl mx-auto">
+                    Gefeliciteerd, Commandant. U heeft de complexe politieke en militaire uitdagingen van de Tweede Wereldoorlog doorstaan. Het As-tijdperk is ten einde gebracht.
+                </p>
+                <div class="grid grid-cols-3 gap-4 bg-gray-900 p-4 border border-gray-700 mb-8 max-w-lg mx-auto">
+                    <div>
+                        <div class="text-xs text-gray-400">Cohesie</div>
+                        <div id="final-cohesion" class="text-lg font-bold text-blue-400"></div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-400">Logistiek</div>
+                        <div id="final-logistics" class="text-lg font-bold text-green-400"></div>
+                    </div>
+                    <div>
+                        <div class="text-xs text-gray-400">Moral</div>
+                        <div id="final-morale" class="text-lg font-bold text-yellow-400"></div>
+                    </div>
+                </div>
+                <div>
+                    <button onclick="resetGame()" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-6 border border-gray-500 rounded btn-choice">
+                        SPEEL OPNIEUW
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <footer class="text-center p-2 text-gray-500 text-xs border-t border-gray-800 bg-gray-900 z-10">
+        Educatieve Simulatie - 3 VWO Geschiedenis Curriculum
+    </footer>
+
+    <script>
+        // Game State
+        let state = {
+            cohesion: 50,
+            logistics: 50,
+            morale: 50,
+            currentScenario: 0
+        };
+
+        // Scenarios Data based on the prompt
+        const scenarios = [
+            {
+                year: "1938",
+                title: "Conferentie van München",
+                description: "Hitler eist het Sudetenland in Tsjecho-Slowakije. De spanningen lopen op. Moeten we toegeven om oorlog te voorkomen (Appeasement), of een harde lijn trekken?",
+                choices: [
+                    {
+                        title: "Appeasement",
+                        desc: "Geef Sudetenland aan Hitler om vrede te kopen.",
+                        effects: { c: -10, l: 15, m: 5 },
+                        effectText: "Cohesie -10 | Logistiek +15 | Moral +5"
+                    },
+                    {
+                        title: "Directe Oorlog",
+                        desc: "Dreig met ingrijpen als Hitler binnenvalt.",
+                        effects: { c: 10, l: -20, m: -15 },
+                        effectText: "Cohesie +10 | Logistiek -20 | Moral -15"
+                    }
+                ]
+            },
+            {
+                year: "1940",
+                title: "Slag om Engeland & Lend-Lease",
+                description: "Na de val van Frankrijk staat Groot-Brittannië er alleen voor. Waar leggen we de prioriteit voor onze beperkte middelen?",
+                choices: [
+                    {
+                        title: "Investeren in Radar & RAF",
+                        desc: "Focus op verdediging van de Britse eilanden.",
+                        effects: { c: 0, l: -10, m: 15 },
+                        effectText: "Cohesie 0 | Logistiek -10 | Moral +15"
+                    },
+                    {
+                        title: "Stuur voorraden naar China/USSR",
+                        desc: "Verdeel de middelen wereldwijd om andere fronten te steunen.",
+                        effects: { c: 15, l: -15, m: -5 },
+                        effectText: "Cohesie +15 | Logistiek -15 | Moral -5"
+                    }
+                ]
+            },
+            {
+                year: "1941",
+                title: "Operatie Barbarossa",
+                description: "Duitsland valt de Sovjet-Unie binnen. Stalin vraagt dringend om materiële steun. Hoe reageren we?",
+                choices: [
+                    {
+                        title: "Lend-Lease aan Stalin",
+                        desc: "Stuur direct duizenden vrachtwagens en staal naar de USSR.",
+                        effects: { c: 20, l: -15, m: 0 },
+                        effectText: "Cohesie +20 | Logistiek -15 | Moral 0"
+                    },
+                    {
+                        title: "Eerst eigen opbouw",
+                        desc: "Bewaar materiaal voor de eigen troepenopbouw in het Westen.",
+                        effects: { c: -25, l: 10, m: 0 },
+                        effectText: "Cohesie -25 | Logistiek +10 | Moral 0"
+                    }
+                ]
+            },
+            {
+                year: "1943",
+                title: "Openen van een Tweede Front",
+                description: "Stalin eist een tweede front in West-Europa om de druk op het Rode Leger te verlichten. Wat is onze strategie?",
+                choices: [
+                    {
+                        title: "Invasie van Italië",
+                        desc: "Val de As-mogendheden aan via de 'Soft Underbelly' van Europa.",
+                        effects: { c: -10, l: 5, m: 10 },
+                        effectText: "Cohesie -10 | Logistiek +5 | Moral +10"
+                    },
+                    {
+                        title: "Directe Landingsoperatie",
+                        desc: "Val direct West-Europa (Frankrijk) binnen.",
+                        effects: { c: 20, l: -25, m: -10 },
+                        effectText: "Cohesie +20 | Logistiek -25 | Moral -10"
+                    }
+                ]
+            },
+            {
+                year: "1944",
+                title: "Bevrijding van West-Europa",
+                description: "Na D-Day rukken we op richting Duitsland. Kiezen we voor een gestage, zekere opmars of een riskante, snelle doorbraak?",
+                choices: [
+                    {
+                        title: "Broad Front Strategy",
+                        desc: "Rijd gestaag op over de gehele breedte van het front (Eisenhower).",
+                        effects: { c: 5, l: 5, m: 5 },
+                        effectText: "Cohesie +5 | Logistiek +5 | Moral +5"
+                    },
+                    {
+                        title: "Operation Market Garden",
+                        desc: "Waag een snelle airborne-aanval via Arnhem (Montgomery).",
+                        effects: { c: 0, l: -20, m: 15 },
+                        effectText: "Cohesie 0 | Logistiek -20 | Moral +15 (bij succes)"
+                    }
+                ]
+            },
+            {
+                year: "1945",
+                title: "Jalta & De Eindfase",
+                description: "Het einde van de oorlog is in zicht. Hoe gaan we om met een wanhopig Duitsland en onze relatie met Stalin?",
+                choices: [
+                    {
+                        title: "Onvoorwaardelijke Overgave",
+                        desc: "Blijf doorvechten tot Berlijn valt, samen met de Sovjets.",
+                        effects: { c: 10, l: -10, m: 10 },
+                        effectText: "Cohesie +10 | Logistiek -10 | Moral +10"
+                    },
+                    {
+                        title: "Onderhandel over Vrede",
+                        desc: "Maak afspraken met het Duitse opperbevel zonder Stalin.",
+                        effects: { c: -50, l: 20, m: -10 },
+                        effectText: "Cohesie -50 | Logistiek +20 | Moral -10"
+                    }
+                ]
+            }
+        ];
+
+        // Loss conditions
+        const lossConditions = {
+            cohesionLow: "De relatie tussen de Westerse Geallieerden en de Sovjet-Unie is onherstelbaar beschadigd. Stalin voelt zich verraden en sluit een afzonderlijke vrede met nazi-Duitsland. De As-mogendheden kunnen nu hun volle kracht op het Westen richten.",
+            cohesionHigh: "U heeft te veel toegegeven aan de Sovjet-Unie. De Westerse invloed in Europa is gemarginaliseerd en de Koude Oorlog breekt voortijdig uit in een zeer nadelige positie voor het Westen.",
+            logistics: "De aanvoerlijnen zijn ingestort. Het leger raakt door voorraden, munitie en brandstof heen. Het geallieerde offensief stagneert en de Duitse oorlogsmachine herneemt het initiatief.",
+            morale: "Het thuisfront is gebroken. Grootschalige stakingen, protesten en oorlogsmoeheid dwingen uw regeringen om te zoeken naar een vroegtijdige, ongunstige wapenstilstand."
+        };
+
+        // DOM Elements
+        const screens = {
+            start: document.getElementById('start-screen'),
+            scenario: document.getElementById('scenario-screen'),
+            gameOver: document.getElementById('game-over-screen'),
+            victory: document.getElementById('victory-screen')
+        };
+
+        // Initialize UI
+        function updateMetersUI() {
+            // Cap values
+            state.cohesion = Math.max(0, Math.min(100, state.cohesion));
+            state.logistics = Math.max(0, Math.min(100, state.logistics));
+            state.morale = Math.max(0, Math.min(100, state.morale));
+
+            // Update Widths
+            document.getElementById('meter-cohesion').style.width = state.cohesion + '%';
+            document.getElementById('meter-logistics').style.width = state.logistics + '%';
+            document.getElementById('meter-morale').style.width = state.morale + '%';
+
+            // Update Text
+            document.getElementById('cohesion-val').textContent = state.cohesion + '%';
+            document.getElementById('logistics-val').textContent = state.logistics + '%';
+            document.getElementById('morale-val').textContent = state.morale + '%';
+
+            // Color warning based on values
+            updateMeterColor('meter-cohesion', state.cohesion, true); // Cohesion has both low and high fail states
+            updateMeterColor('meter-logistics', state.logistics, false);
+            updateMeterColor('meter-morale', state.morale, false);
+        }
+
+        function updateMeterColor(elementId, value, checkHigh) {
+            const el = document.getElementById(elementId);
+            el.className = 'meter-fill '; // Reset
+            
+            if (value <= 20) {
+                el.classList.add('bg-red-600');
+            } else if (checkHigh && value >= 80) {
+                el.classList.add('bg-red-600');
+            } else if (value <= 40 || (checkHigh && value >= 70)) {
+                el.classList.add('bg-yellow-500');
+            } else {
+                if (elementId === 'meter-cohesion') el.classList.add('bg-blue-600');
+                if (elementId === 'meter-logistics') el.classList.add('bg-green-600');
+                if (elementId === 'meter-morale') el.classList.add('bg-yellow-500'); // Keeping base yellow for morale
+            }
+        }
+
+        function showScreen(screenName) {
+            Object.values(screens).forEach(s => s.classList.add('hidden'));
+            screens[screenName].classList.remove('hidden');
+        }
+
+        function startGame() {
+            resetState();
+            showScreen('scenario');
+            loadScenario();
+        }
+
+        function resetState() {
+            state.cohesion = 50;
+            state.logistics = 50;
+            state.morale = 50;
+            state.currentScenario = 0;
+            updateMetersUI();
+            document.getElementById('year-display').textContent = '1938';
+        }
+
+        function resetGame() {
+            showScreen('start');
+        }
+
+        function loadScenario() {
+            if (state.currentScenario >= scenarios.length) {
+                endGame(true);
+                return;
+            }
+
+            const sc = scenarios[state.currentScenario];
+            
+            // Typewriter effect trigger (hacky way to restart CSS animation)
+            const descEl = document.getElementById('scenario-desc');
+            descEl.style.animation = 'none';
+            descEl.offsetHeight; /* trigger reflow */
+            descEl.style.animation = null; 
+
+            document.getElementById('year-display').textContent = sc.year;
+            document.getElementById('scenario-title').textContent = sc.title;
+            document.getElementById('scenario-desc').textContent = sc.description;
+
+            // Choice A
+            document.getElementById('choice-a-title').textContent = sc.choices[0].title;
+            document.getElementById('choice-a-desc').textContent = sc.choices[0].desc;
+            document.getElementById('choice-a-effects').textContent = sc.choices[0].effectText;
+
+            // Choice B
+            document.getElementById('choice-b-title').textContent = sc.choices[1].title;
+            document.getElementById('choice-b-desc').textContent = sc.choices[1].desc;
+            document.getElementById('choice-b-effects').textContent = sc.choices[1].effectText;
+        }
+
+        function makeChoice(choiceIndex) {
+            const sc = scenarios[state.currentScenario];
+            const effects = sc.choices[choiceIndex].effects;
+
+            // Apply effects
+            state.cohesion += effects.c;
+            state.logistics += effects.l;
+            state.morale += effects.m;
+
+            updateMetersUI();
+
+            // Check loss conditions immediately after updating meters
+            setTimeout(() => {
+                const failReason = checkLossCondition();
+                if (failReason) {
+                    endGame(false, failReason);
+                } else {
+                    // Next scenario
+                    state.currentScenario++;
+                    loadScenario();
+                }
+            }, 300); // Small delay to let meters animate before jumping to game over
+        }
+
+        function checkLossCondition() {
+            if (state.cohesion <= 0) return lossConditions.cohesionLow;
+            if (state.cohesion >= 100) return lossConditions.cohesionHigh;
+            if (state.logistics <= 0) return lossConditions.logistics;
+            if (state.morale <= 0) return lossConditions.morale;
+            return null;
+        }
+
+        function endGame(victory, failReason = "") {
+            if (victory) {
+                document.getElementById('final-cohesion').textContent = state.cohesion + '%';
+                document.getElementById('final-logistics').textContent = state.logistics + '%';
+                document.getElementById('final-morale').textContent = state.morale + '%';
+                showScreen('victory');
+            } else {
+                document.getElementById('fail-year').textContent = scenarios[state.currentScenario].year;
+                document.getElementById('game-over-reason').textContent = failReason;
+                showScreen('gameOver');
+            }
+        }
+
+        // Initialize on load
+        updateMetersUI();
+    </script>
+</body>
+</html>
